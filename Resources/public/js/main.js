@@ -35,13 +35,15 @@ require(['husky'], function(Husky) {
             }
         });
 
-
         bundles.forEach(function(bundle) {
             app.use('/bundles/' + bundle + '/js/main.js');
         }.bind(this));
 
         app.use('aura_extensions/backbone-relational');
         app.use('aura_extensions/sulu-navigation');
+        app.use('aura_extensions/sulu-content-navigation');
+
+        app.use('/bundles/sulucontact/js/aura_extensions/contact.js');
 
         app.components.addSource('suluadmin', '/bundles/suluadmin/js/components');
 
