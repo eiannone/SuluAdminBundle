@@ -83,7 +83,36 @@ define([], function() {
                             }.bind(this)
                         }
                     ]
-                });
+                    },
+                    {
+                        id: 'template',
+                        icon: 'tag',
+                        iconSize: 'large',
+                        group: 'right',
+                        position: 1,
+                        type: 'select',
+                        items: [
+                            {
+                                title: this.sandbox.translate('default'),
+                                callback: function() {
+                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'default'});
+                                }.bind(this)
+                            },
+                            {
+                                title: this.sandbox.translate('overview'),
+                                callback: function() {
+                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'overview'});
+                                }.bind(this)
+                            },
+                            {
+                                title: this.sandbox.translate('simple'),
+                                callback: function() {
+                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'simple'});
+                                }.bind(this)
+                            }
+                        ]
+                    }
+                );
                 return defaults;
             }
         },
