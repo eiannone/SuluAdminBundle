@@ -28,7 +28,8 @@ define([], function() {
     var defaults = {
             heading: '',
             template: 'default',
-            instanceName: 'content'
+            instanceName: 'content',
+            extendTemplate: null
         },
 
         templates = {
@@ -61,71 +62,11 @@ define([], function() {
                         ]
                     }
                 ];
-            },
-            defaultPreview: function() {
-                var defaults = templates.default.call(this);
-                defaults.splice(1, 0, {
-                    icon: 'eye-open',
-                    iconSize: 'large',
-                    group: 'right',
-                    position: 1,
-                    items: [
-                        {
-                            title: this.sandbox.translate('sulu.edit-toolbar.new-window'),
-                            callback: function() {
-                                this.sandbox.emit('sulu.edit-toolbar.preview.new-window');
-                            }.bind(this)
-                        },
-                        {
-                            title: this.sandbox.translate('sulu.edit-toolbar.split-screen'),
-                            callback: function() {
-                                this.sandbox.emit('sulu.edit-toolbar.preview.split-screen');
-                            }.bind(this)
-                        }
-                    ]
-                    },
-                    {
-                        id: 'template',
-                        icon: 'tag',
-                        iconSize: 'large',
-                        group: 'right',
-                        position: 1,
-                        type: 'select',
-                        items: [
-                            {
-                                title: this.sandbox.translate('default'),
-                                callback: function() {
-                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'default'});
-                                }.bind(this)
-                            },
-                            {
-                                title: this.sandbox.translate('overview'),
-                                callback: function() {
-                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'overview'});
-                                }.bind(this)
-                            },
-                            {
-                                title: this.sandbox.translate('simple'),
-                                callback: function() {
-                                    this.sandbox.emit('sulu.edit-toolbar.dropdown.template.item-clicked', {'key': 'simple'});
-                                }.bind(this)
-                            }
-                        ]
-                    }
-                );
-                return defaults;
             }
         },
 
         changeStateCallbacks = {
             default: function(saved, type) {
-                if (!!saved) {
-                    this.sandbox.emit('husky.edit-toolbar.item.disable', 'save-button');
-                } else {
-                    this.sandbox.emit('husky.edit-toolbar.item.enable', 'save-button');
-                }
-            },
-            defaultPreview: function(saved, type) {
                 if (!!saved) {
                     this.sandbox.emit('husky.edit-toolbar.item.disable', 'save-button');
                 } else {
@@ -154,6 +95,11 @@ define([], function() {
                         this.sandbox.logger.log('no template found!');
                     }
                 }
+            } else if (typeof template === 'function' && !!this.options.extendTemplate) {
+                this.options.template = templates[this.options.extendTemplate].call(this);
+                this.options.template = this.options.template.concat(template.call(this));
+
+                template = this.options.extendTemplate;
             }
 
             if (!this.options.changeStateCallback || typeof this.options.changeStateCallback !== 'function') {
