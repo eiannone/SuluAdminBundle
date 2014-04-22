@@ -31,7 +31,7 @@ define(function() {
                 medium: 1600
             }
         },
-    
+
         eventNamespace = 'sulu.app.',
 
         /**
@@ -535,7 +535,7 @@ define(function() {
         restoreContentWidthProperties: function() {
             this.sandbox.dom.width(this.$el, '');
             this.sandbox.dom.css(this.$el, 'width', '');
-            this.sandbox.dom.css(this.$el, 'max-width', constants.contentMaxWidth+'px');
+            this.sandbox.dom.css(this.$el, 'max-width', '');
         },
 
         /**
