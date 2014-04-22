@@ -24,9 +24,14 @@ define(function() {
 
             suluNavigateAMark: '[data-sulu-navigate="true"]', //a tags which match this mark will use the sulu.navigate method
             fullWidthClass: 'fullwidth',
-            fullHeightClass: 'fullheight'
-        },
+            fullHeightClass: 'fullheight',
 
+            breakPoints: {
+                small: 1440,
+                medium: 1600
+            }
+        },
+    
         eventNamespace = 'sulu.app.',
 
         /**
@@ -175,6 +180,19 @@ define(function() {
                 this.bindDomEvents();
 
                 this.sandbox.emit(INITIALIZED.call(this));
+
+                // below breakpoint (1440) the navigation will be collapsed
+                if(this.sandbox.dom.width(window) < constants.breakPoints.small) {
+                    this.resetUI({
+                        content: 'auto',
+                        navigation: 'small'
+                    });
+                } else {
+                    this.resetUI({
+                        content: 'auto',
+                        navigation: 'auto'
+                    });
+                }
             }
         },
 
@@ -225,6 +243,19 @@ define(function() {
         emitViewPortDimensionsChanged: function() {
             var width = this.sandbox.dom.width(window),
                 height = this.sandbox.dom.height(window);
+
+            // below breakpoint (1440) the navigation will be collapsed
+            if(width < constants.breakPoints.small) {
+                this.resetUI({
+                    content: 'auto',
+                    navigation: 'small'
+                });
+            } else {
+                this.resetUI({
+                    content: 'auto',
+                    navigation: 'auto'
+                });
+            }
 
             this.sandbox.emit(VIEWPORT_DIMENSIONS_CHANGED.call(this), {width: width, height: height});
         },
@@ -504,7 +535,7 @@ define(function() {
         restoreContentWidthProperties: function() {
             this.sandbox.dom.width(this.$el, '');
             this.sandbox.dom.css(this.$el, 'width', '');
-            this.sandbox.dom.css(this.$el, 'max-width', '920px');
+            this.sandbox.dom.css(this.$el, 'max-width', constants.contentMaxWidth+'px');
         },
 
         /**
@@ -518,7 +549,7 @@ define(function() {
 
             this.sandbox.dom.width(this.$el, '');
             this.sandbox.dom.css(this.$el, 'width', '');
-            this.sandbox.dom.css(this.$el, 'max-width', '510px');
+            this.sandbox.dom.css(this.$el, 'max-width', constants.contentMinWidth+'px');
         },
 
         /**
