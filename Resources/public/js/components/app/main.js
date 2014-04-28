@@ -181,18 +181,7 @@ define(function() {
 
                 this.sandbox.emit(INITIALIZED.call(this));
 
-                // below breakpoint (1440) the navigation will be collapsed
-                if(this.sandbox.dom.width(window) < constants.breakPoints.small) {
-                    this.resetUI({
-                        content: 'auto',
-                        navigation: 'small'
-                    });
-                } else {
-                    this.resetUI({
-                        content: 'auto',
-                        navigation: 'auto'
-                    });
-                }
+                this.adjustUIAccordingToBreakpoints(this.sandbox.dom.width(window));
             }
         },
 
@@ -244,8 +233,27 @@ define(function() {
             var width = this.sandbox.dom.width(window),
                 height = this.sandbox.dom.height(window);
 
-            // below breakpoint (1440) the navigation will be collapsed
+            this.adjustUIAccordingToBreakpoints(width);
+
+            this.sandbox.emit(VIEWPORT_DIMENSIONS_CHANGED.call(this), {width: width, height: height});
+        },
+
+        /**
+         * Adjusts view depending on breakpoints
+         * @param {Number} width of window
+         */
+        adjustUIAccordingToBreakpoints: function(width){
+
+            // < 1400 navigation collapsed / no preview
+            // > 1400 and < 1600 navigation collapsed / preview visible
+            // > 1600 navigation expanded / preview visible
+
             if(width < constants.breakPoints.small) {
+                this.resetUI({
+                    content: 'auto',
+                    navigation: 'small'
+                });
+            } else if(width >= constants.breakPoints.small && width < constants.breakPoints.medium) {
                 this.resetUI({
                     content: 'auto',
                     navigation: 'small'
@@ -257,7 +265,6 @@ define(function() {
                 });
             }
 
-            this.sandbox.emit(VIEWPORT_DIMENSIONS_CHANGED.call(this), {width: width, height: height});
         },
 
         /**

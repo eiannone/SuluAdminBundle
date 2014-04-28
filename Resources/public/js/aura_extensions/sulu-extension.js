@@ -227,6 +227,16 @@
                     gridOptions.columnOptionsInstanceName = gridOptions.columnOptionsInstanceName ? gridOptions.columnOptionsInstanceName : toolbarOptions.instanceName;
                     gridOptions.contentContainer = '#content';
 
+                    // get column name of column which is default if it is not set already
+                    if(!!gridOptions.editPencil && (!gridOptions.editPencil.column || gridOptions.editPencil.column === '')){
+                        this.sandbox.util.each(data, function(index) {
+                            if(!!data[index].default) {
+                                gridOptions.editPencil.column = data[index].id;
+                                return false;
+                            }
+                        }.bind(this));
+                    }
+
                     // start datagrid
                     this.sandbox.start([
                         {
