@@ -26810,10 +26810,10 @@ define('__component__$datagrid@husky',[],function() {
             DATA_GET = namespace + 'data.get',
 
         /**
-         * triggers husky.datagrid.edit.item
-         * @event husky.datagrid.edit.item
+         * triggers husky.datagrid.item.edit
+         * @event husky.datagrid.item.edit
          */
-            EDIT_ITEM = namespace + 'edit.item',
+            EDIT_ITEM = namespace + 'item.edit',
 
         /**
          * calculates the width of a text by creating a tablehead element and measure its width
@@ -27870,7 +27870,7 @@ define('__component__$datagrid@husky',[],function() {
                 this.$element.on('click', 'tbody > tr input[type="radio"]', this.selectItem.bind(this));
             }
 
-            this.$element.on('click', 'tbody > tr', function(event) {
+            this.sandbox.dom.on(this.$el, 'click', function(event){
                 if (!this.sandbox.dom.$(event.target).is('input') && !this.sandbox.dom.$(event.target).is('span.icon-remove')) {
                     var id = this.sandbox.dom.$(event.currentTarget).data('id');
 
@@ -27880,7 +27880,7 @@ define('__component__$datagrid@husky',[],function() {
                         this.sandbox.emit(ITEM_CLICK, event);
                     }
                 }
-            }.bind(this));
+            }.bind(this), 'tbody > tr');
 
             if (this.options.pagination) {
 

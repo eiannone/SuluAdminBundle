@@ -9,6 +9,14 @@
  * @module husky/components/preview
  */
 
+/* TODO
+*
+* - show preview only when viewport > 1440 and collapsed navigation
+* - show preview and expanded navigation when viewport > 1600
+* - different ruleset for preview in content
+*
+*/
+
 /**
  * @class Preview
  * @constructor
@@ -21,7 +29,9 @@
  * @param {Array}   [options.toolbar.resolutions] available widths for dropdown
  * @param {Boolean} [options.toolbar.showLeft] show the left part of the toolbar
  * @param {Boolean} [options.toolbar.showRight] show the right part of the toolbar
- *
+ * @param {String}  [options.type] type of preview (flexible or fixed width)
+ * @param {String}  [options.nextTo] preview is next to list (fullWidth) or form
+ * @param {Number}  [options.width] width of preview - only relevant for fixed width previews
  */
 define([], function() {
 
@@ -46,6 +56,10 @@ define([], function() {
                     showRight: true
                 },
 
+                type: 'flexible',
+                nextTo: 'form',
+                width: null,
+
                 mainContentElementIdentifier: '',
                 templateUrl: '',
                 newWindowUrl: ''
@@ -53,6 +67,17 @@ define([], function() {
             },
 
             constants = {
+
+                type: {
+                    flexible: 'flexible',
+                    fixed: 'fixed'
+                },
+
+                nextTo: {
+                    form: 'form',
+                    list: 'list'
+                },
+
                 breakPointBig: 980,
 
                 // needed to hide preview and show only new-window-button
@@ -138,7 +163,6 @@ define([], function() {
              * Initializes the rendering process
              */
             render: function() {
-
                 var widths = this.calculateCurrentWidths(false, false);
 
                 this.renderWrapper(widths);
@@ -147,6 +171,7 @@ define([], function() {
                 if (!!this.options.toolbar.enabled) {
                     this.renderToolbar(widths);
                 }
+
 
                 // adjust content width if needed
                 this.sandbox.emit('sulu.app.content.dimensions-change', {
@@ -609,29 +634,36 @@ define([], function() {
                     viewportWidth = this.sandbox.dom.width(window),
                     margin = 0;
 
-                if (!!expanded) {
-                    widths.preview = viewportWidth - constants.mainContentMinWidth - constants.marginPreviewExpandedLeft - constants.minMainContentMarginLeft;
+                if (this.options.type === constants.type.fixed) {
+                    widths.preview = this.options.width;
+                    widths.content = viewportWidth - this.options.width - constants.marginPreviewExpandedLeft - constants.minMainContentMarginLeft;
 
-                    if (!!resized) { // animation needs outer width
-                        widths.content = constants.mainContentMinWidth;
-                    } else {
-                        widths.content = constants.mainContentMinWidthIncMarginLeft;
-                    }
                 } else {
-                    // when resized needed to have enough space for preview
-                    // or rather for the content to have enough whitespace on the right
-                    if (!!resized && viewportWidth < constants.breakPointBig) {
-                        margin = constants.maxMainContentMarginLeft + constants.maxMainContentPaddingLeft;
-                    }
 
-                    tmpWidth = viewportWidth - constants.previewMinWidth - constants.marginPreviewCollapsedLeft - margin;
+                    if (!!expanded) {
+                        widths.preview = viewportWidth - constants.mainContentMinWidth - constants.marginPreviewExpandedLeft - constants.minMainContentMarginLeft;
 
-                    if (tmpWidth > constants.mainContentMaxWidthIncMarginLeft) {
-                        widths.content = constants.mainContentMaxWidthIncMarginLeft;
-                        widths.preview = viewportWidth - widths.content - constants.marginPreviewCollapsedLeft;
+                        if (!!resized) { // animation needs outer width
+                            widths.content = constants.mainContentMinWidth;
+                        } else {
+                            widths.content = constants.mainContentMinWidthIncMarginLeft;
+                        }
                     } else {
-                        widths.content = tmpWidth;
-                        widths.preview = constants.previewMinWidth;
+                        // when resized needed to have enough space for preview
+                        // or rather for the content to have enough whitespace on the right
+                        if (!!resized && viewportWidth < constants.breakPointBig) {
+                            margin = constants.maxMainContentMarginLeft + constants.maxMainContentPaddingLeft;
+                        }
+
+                        tmpWidth = viewportWidth - constants.previewMinWidth - constants.marginPreviewCollapsedLeft - margin;
+
+                        if (tmpWidth > constants.mainContentMaxWidthIncMarginLeft) {
+                            widths.content = constants.mainContentMaxWidthIncMarginLeft;
+                            widths.preview = viewportWidth - widths.content - constants.marginPreviewCollapsedLeft;
+                        } else {
+                            widths.content = tmpWidth;
+                            widths.preview = constants.previewMinWidth;
+                        }
                     }
                 }
 
