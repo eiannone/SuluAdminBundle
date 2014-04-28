@@ -15,10 +15,7 @@
  *
  * @param {Object}  [options] Configuration object
  * @param {String}  [options.mainContentElementIdentifier] ID of the element which will be next to the preview (main content element)
- * @param {Object}  [options.iframeSource] configuration object for the source of the iframe
- * @param {String}  [options.iframeSource.url] url used for the iframe
- * @param {String}  [options.iframeSource.webspace] webspace section of the url
- * @param {String}  [options.iframeSource.language] language section of the url
+ * @param {String}  [options.url] url used the request
  * @param {String}  [options.id] id of the element
  * @param {Object}  [options.toolbar] options for the toolbar
  * @param {Array}   [options.toolbar.resolutions] available widths for dropdown
@@ -35,6 +32,7 @@ define([], function() {
          */
         var defaults = {
                 toolbar: {
+                    enabled: true,
                     resolutions: [
                         1920,
                         1680,
@@ -49,14 +47,9 @@ define([], function() {
                 },
 
                 mainContentElementIdentifier: '',
+                templateUrl: '',
+                newWindowUrl: ''
 
-                iframeSource: {
-                    url: '',
-                    webspace: '',
-                    language: '',
-                    template: '',
-                    id: ''
-                }
             },
 
             constants = {
@@ -122,25 +115,19 @@ define([], function() {
         return {
 
             initialize: function() {
-                this.options = this.sandbox.util.extend({}, defaults, this.options);
+                this.options = this.sandbox.util.extend(true, {}, defaults, this.options);
 
                 // component vars
-                this.url = '';
+                this.initialLoad = true;
                 this.isExpanded = false;
-                this.iframeExists = false;
 
                 // dom elements
                 this.$wrapper = null;
-                this.$iframe = null;
+                this.$innerHTML = null;
                 this.$toolbar = null;
                 this.$mainContent = this.sandbox.dom.$('#' + this.options.mainContentElementIdentifier)[0];
 
                 this.render();
-                this.bindDomEvents();
-                this.bindCustomEvents();
-                this.adjustDisplayedComponents();
-
-                this.sandbox.emit(INITIALIZED);
             },
 
             /*********************************************
@@ -151,23 +138,26 @@ define([], function() {
              * Initializes the rendering process
              */
             render: function() {
-                this.url = this.getUrl(this.options.iframeSource.url, this.options.iframeSource.webspace, this.options.iframeSource.language, this.options.iframeSource.id, this.options.iframeSource.template);
 
                 var widths = this.calculateCurrentWidths(false, false);
 
                 this.renderWrapper(widths);
-                this.renderIframe(widths.preview, this.url);
-                this.renderToolbar(widths);
+                this.getTemplate(widths.preview);
+
+                if (!!this.options.toolbar.enabled) {
+                    this.renderToolbar(widths);
+                }
 
                 // adjust content width if needed
                 this.sandbox.emit('sulu.app.content.dimensions-change', {
                     width: widths.content,
                     left: constants.maxMainContentMarginLeft,
-                    paddingLeft: constants.maxMainContentPaddingLeft});
+                    paddingLeft: constants.maxMainContentPaddingLeft
+                });
             },
 
             /**
-             * Renders the div which contains the iframe
+             * Renders the div which contains the template returned by the server
              * with the maximum available space
              * @param {Object} widths object with widths of preview and content
              */
@@ -185,18 +175,40 @@ define([], function() {
             },
 
             /**
-             * Renders iframe
-             * @param {Number} width of iframe
-             * @param {String} url for iframe target
+             * Renders template returned by request to url
+             * @param {Number} width available for inner html
              */
-            renderIframe: function(width, url) {
-                this.$iframe = this.sandbox.dom.$('<iframe id="preview-iframe" class="preview-iframe" src="' + url + '" width="' + width + 'px" height="100%"></iframe>');
-                this.sandbox.dom.append(this.$wrapper, this.$iframe);
-                this.iframeExists = true;
+            getTemplate: function(width) {
+                if (!!this.options.templateUrl) {
+
+                    this.sandbox.util.load(this.options.templateUrl, { width: width})
+
+                        .then(function(template) {
+                            this.$innerHTML = template;
+                            this.sandbox.dom.append(this.$wrapper, this.$innerHTML);
+
+                            if (!!this.initialLoad) {
+                                this.initialLoad = false;
+                                this.bindDomEvents();
+                                this.bindCustomEvents();
+                                this.adjustDisplayedComponents();
+                                this.sandbox.emit(INITIALIZED);
+                            }
+
+                        }.bind(this))
+
+                        .fail(function(status, error) {
+                            this.sandbox.logger.error("preview: error while fetching template", status, error);
+                        }.bind(this));
+
+
+                } else {
+                    this.sandbox.logger.error("preview: missing template url!");
+                }
             },
 
             /**
-             * Renders toolbar on top of the iframe
+             * Renders toolbar on top of the inner html
              * @param {Object} widths object with widths of preview and content
              */
             renderToolbar: function(widths) {
@@ -205,16 +217,16 @@ define([], function() {
 
                 this.$toolbar = this.sandbox.dom.$([
                     '<div id="preview-toolbar" class="preview-toolbar">',
-                    '<div id="', constants.toolbarLeft, '" class="left pointer collapsed"><span class="icon-step-backward"></span></div>',
-                    '<div id="', constants.toolbarRight, '" class="right">',
-                    '<div id="', constants.toolbarNewWindow, '" class="new-window pull-right pointer"><span class="icon-disk-export"></span></div>',
-                    '<div id="', constants.toolbarResolutions, '" class="resolutions pull-right pointer">',
-                    '<label class="drop-down-trigger">',
-                    '<span class="dropdown-toggle"></span>',
-                    '<span class="dropdown-label">', resolutionsLabel, '</span>',
-                    '</label>',
-                    '</div>',
-                    '</div>',
+                    '   <div id="', constants.toolbarLeft, '" class="left pointer collapsed"><span class="icon-step-backward"></span></div>',
+                    '   <div id="', constants.toolbarRight, '" class="right">',
+                    '       <div id="', constants.toolbarNewWindow, '" class="new-window pull-right pointer"><span class="icon-disk-export"></span></div>',
+                    '       <div id="', constants.toolbarResolutions, '" class="resolutions pull-right pointer">',
+                    '           <label class="drop-down-trigger">',
+                    '               <span class="dropdown-toggle"></span>',
+                    '               <span class="dropdown-label">', resolutionsLabel, '</span>',
+                    '           </label>',
+                    '       </div>',
+                    '   </div>',
                     '</div>'
                 ].join(''));
 
@@ -269,49 +281,50 @@ define([], function() {
              */
             bindDomEvents: function() {
 
-                //expand and collapse
-                this.sandbox.dom.on('#' + constants.toolbarLeft, 'click', function(event) {
+                if (!!this.options.toolbar.enabled) {
 
-                    var $target = event.currentTarget;
+                    //expand and collapse
+                    this.sandbox.dom.on('#' + constants.toolbarLeft, 'click', function(event) {
 
-                    if (!this.isExpanded) {
-                        this.expandPreview($target);
-                    } else {
+                        var $target = event.currentTarget;
+
+                        if (!this.isExpanded) {
+                            this.expandPreview($target);
+                        } else {
+                            this.collapsePreview($target);
+                        }
+
+                    }.bind(this));
+
+                    // show in new window
+                    this.sandbox.dom.on('#' + constants.toolbarNewWindow, 'click', function() {
+
+                        // collapse everything
+                        var $target = this.sandbox.dom.find('#' + constants.toolbarLeft, this.$el);
                         this.collapsePreview($target);
-                    }
 
-                }.bind(this));
+                        window.open(this.options.newWindowUrl);
 
-                // show in new window
-                this.sandbox.dom.on('#' + constants.toolbarNewWindow, 'click', function() {
+                        this.sandbox.dom.hide(this.$wrapper);
+                        this.sandbox.dom.hide(this.$toolbar);
+                        this.sandbox.dom.remove(this.$innerHTML);
 
-                    // collapse everything
-                    var $target = this.sandbox.dom.find('#' + constants.toolbarLeft, this.$el);
-                    this.collapsePreview($target);
+                        this.sandbox.emit('husky.navigation.show');
+                        this.sandbox.emit('sulu.header.content.show-back', true);
+                        this.sandbox.emit('sulu.app.content.dimensions-change', {
+                            width: '',
+                            left: constants.maxMainContentMarginLeft,
+                            paddingLeft: constants.maxMainContentPaddingLeft});
 
-                    window.open(this.url);
-
-                    this.sandbox.dom.hide(this.$wrapper);
-                    this.sandbox.dom.hide(this.$toolbar);
-                    this.sandbox.dom.remove(this.$iframe);
-                    this.iframeExists = false;
-
-                    this.sandbox.emit('husky.navigation.show');
-                    this.sandbox.emit('sulu.header.content.show-back', true);
-                    this.sandbox.emit('sulu.app.content.dimensions-change', {
-                        width: '',
-                        left: constants.maxMainContentMarginLeft,
-                        paddingLeft: constants.maxMainContentPaddingLeft});
-
-                    this.sandbox.dom.width(this.$mainContent, '');
+                        this.sandbox.dom.width(this.$mainContent, '');
 
 
-                    this.sandbox.emit(HIDE);
+                        this.sandbox.emit(HIDE);
 
-                }.bind(this));
+                    }.bind(this));
 
-                // TODO: dropdown events handling
-
+                    // TODO: dropdown events handling
+                }
             },
 
             /**
@@ -319,29 +332,32 @@ define([], function() {
              */
             bindCustomEvents: function() {
 
-                // adjust dropdown width
-                this.sandbox.on('husky.dropdown.resolutionsDropdown.showing', function() {
-                    var $resolutions = this.sandbox.dom.find('#' + constants.toolbarResolutions, this.$toolbarRight),
-                        $dropdownMenu = this.sandbox.dom.find('.dropdown-menu', $resolutions);
-                    this.sandbox.dom.width($dropdownMenu, $resolutions.outerWidth());
-                    this.sandbox.dom.width($resolutions, $resolutions.outerWidth());
-                }.bind(this));
+                if (!!this.options.toolbar.enabled) {
 
-                // change label of dropdown to selection
-                this.sandbox.on('husky.dropdown.resolutionsDropdown.item.click', function(item) {
-                    this.sandbox.dom.text(this.$toolbarResolutionsLabel, item.name);
-                }.bind(this));
+                    // adjust dropdown width
+                    this.sandbox.on('husky.dropdown.resolutionsDropdown.showing', function() {
+                        var $resolutions = this.sandbox.dom.find('#' + constants.toolbarResolutions, this.$toolbarRight),
+                            $dropdownMenu = this.sandbox.dom.find('.dropdown-menu', $resolutions);
+                        this.sandbox.dom.width($dropdownMenu, $resolutions.outerWidth());
+                        this.sandbox.dom.width($resolutions, $resolutions.outerWidth());
+                    }.bind(this));
 
-                // make preview responsive
-                this.sandbox.on('sulu.app.viewport.dimensions-changed', this.adjustDisplayedComponents.bind(this));
+                    // change label of dropdown to selection
+                    this.sandbox.on('husky.dropdown.resolutionsDropdown.item.click', function(item) {
+                        this.sandbox.dom.text(this.$toolbarResolutionsLabel, item.name);
+                    }.bind(this));
 
-                this.sandbox.on('sulu.content.preview.change-url', function(iframeSource) {
-                    this.sandbox.dom.remove(this.$iframe);
-                    this.iframeExists = false;
+                    // make preview responsive
+                    this.sandbox.on('sulu.app.viewport.dimensions-changed', this.adjustDisplayedComponents.bind(this));
+
+                }
+
+                this.sandbox.on('sulu.content.preview.change-url', function(url) {
+                    this.sandbox.dom.remove(this.$innerHTML);
 
                     var widths = this.calculateCurrentWidths(this.isExpanded, true);
-                    this.options.iframeSource = this.sandbox.util.extend({}, this.options.iframeSource, iframeSource);
-                    this.restoreIframe(widths.preview);
+                    this.options.newWindowUrl = url;
+                    this.restoreInnerHTML(widths.preview);
                 }.bind(this));
 
             },
@@ -407,7 +423,7 @@ define([], function() {
                 this.isExpanded = false;
 
                 // special case for extreme resized expanded preview
-                if(widthViewport < constants.breakPointSmall){
+                if (widthViewport < constants.breakPointSmall) {
                     this.adjustDisplayedComponents();
                     this.sandbox.dom.css(this.$toolbarRight, 'float', 'right');
                 }
@@ -438,8 +454,8 @@ define([], function() {
                     queue: false
                 });
 
-                // preview iframe
-                this.sandbox.dom.animate(this.$iframe, {
+                // preview inner html
+                this.sandbox.dom.animate(this.$innerHTML, {
                     width: widths.preview + 'px'
                 }, {
                     duration: constants.transitionDuration,
@@ -490,9 +506,9 @@ define([], function() {
                     // hide preview except for open in new window button
                     if (widths.content <= (constants.breakPointSmall + constants.previewMinWidth)) {
 
-                        // remove iframe - disables unnecessary communication
+                        // remove innerhtml - disables unnecessary communication
 
-                        this.sandbox.dom.hide(this.$iframe);
+                        this.sandbox.dom.hide(this.$innerHTML);
                         this.sandbox.dom.hide(this.$wrapper);
 
                         this.sandbox.dom.hide(this.$toolbarResolutions);
@@ -502,8 +518,7 @@ define([], function() {
                         this.sandbox.dom.show(this.$toolbarRight);
                         this.sandbox.dom.show(this.$toolbarOpenNewWindow);
 
-                        this.sandbox.dom.remove(this.$iframe);
-                        this.iframeExists = false;
+                        this.sandbox.dom.remove(this.$innerHTML);
 
                         this.sandbox.dom.css(this.$toolbarRight, 'float', 'right');
 
@@ -512,14 +527,14 @@ define([], function() {
                         // hide resolutions div in toolbar
                     } else if (widths.preview < constants.minWidthForToolbarCollapsed) {
 
-                        this.restoreIframe(widths.preview);
+                        this.restoreInnerHTML(widths.preview);
                         this.showNecessaryDOMElements();
                         this.sandbox.dom.hide(this.$toolbarResolutions);
                         this.sandbox.dom.css(this.$toolbarRight, 'float', 'left');
 
                     } else {
 
-                        this.restoreIframe(widths.preview);
+                        this.restoreInnerHTML(widths.preview);
                         this.showNecessaryDOMElements();
                         this.sandbox.dom.show(this.$toolbarResolutions);
                         this.sandbox.dom.css(this.$toolbarRight, 'float', 'right');
@@ -552,20 +567,18 @@ define([], function() {
                 }
 
                 this.sandbox.dom.width(this.$wrapper, widths.preview);
-                this.sandbox.dom.width(this.$iframe, widths.preview);
+                this.sandbox.dom.width(this.$innerHTML, widths.preview);
                 this.sandbox.dom.width(this.$toolbar, widths.preview + constants.marginPreviewCollapsedLeft);
                 this.sandbox.dom.width(this.$mainContent, widths.content);
             },
 
             /**
-             * Restores the iframe
+             * Restores the inner html after opened in new window
              * @param {Number} width of preview
              */
-            restoreIframe: function(width) {
-                if (!this.iframeExists) {
-                    var url = this.getUrl(this.options.iframeSource.url, this.options.iframeSource.webspace, this.options.iframeSource.language, this.options.iframeSource.id, this.options.iframeSource.template);
-                    this.renderIframe(width, url);
-                    this.iframeExists = true;
+            restoreInnerHTML: function(width) {
+                if (!this.$innerHTML) {
+                    this.getTemplate(width);
                 }
             },
 
@@ -577,7 +590,7 @@ define([], function() {
                 this.sandbox.dom.show(this.$toolbarLeft);
                 this.sandbox.dom.show(this.$toolbarRight);
                 this.sandbox.dom.show(this.$wrapper);
-                this.sandbox.dom.show(this.$iframe);
+                this.sandbox.dom.show(this.$innerHTML);
                 this.sandbox.dom.show(this.$toolbarOpenNewWindow);
 
                 this.sandbox.dom.css(this.$toolbarRight, 'float', 'right');
@@ -623,31 +636,6 @@ define([], function() {
                 }
 
                 return widths;
-            },
-
-            /**
-             * Concatenates the given strings to an url
-             * @param {String} url
-             * @param {String} webspace
-             * @param {String} language
-             * @param {String} id
-             * @param {String} template
-             * @return {String} url string
-             */
-            getUrl: function(url, webspace, language, id, template) {
-
-                if (!url || !id || !webspace || !language || !template) {
-                    this.sandbox.logger.error('not all url params for iframe definded!');
-                    return '';
-                }
-
-                url = url[url.length - 1] === '/' ? url : url + '/';
-                url += id + '?';
-                url += 'webspace=' + webspace;
-                url += '&language=' + language;
-                url += '&template=' + template;
-
-                return url;
             },
 
             /**
