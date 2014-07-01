@@ -15,6 +15,7 @@ require.config({
         'aura_extensions/backbone-relational': 'aura_extensions/backbone-relational',
         'aura_extensions/sulu-content-tabs': 'aura_extensions/sulu-content-tabs',
         'aura_extensions/sulu-extension': 'aura_extensions/sulu-extension',
+        'type/collection-component': 'components/single-row-collection/collection-component-type',
 
         '__component__$app@suluadmin': 'components/app/main',
         '__component__$content@suluadmin': 'components/content/main',
@@ -22,13 +23,15 @@ require.config({
         '__component__$header@suluadmin': 'components/header/main',
         '__component__$list-toolbar@suluadmin': 'components/list-toolbar/main',
         '__component__$labels@suluadmin': 'components/labels/main',
-        '__component__$grid-group@suluadmin': 'components/grid-group/main'
+        '__component__$grid-group@suluadmin': 'components/grid-group/main',
+        '__component__$single-row-collectionp@suluadmin': 'components/single-row-collection/main'
     },
     include: [
         'app-config',
         'aura_extensions/backbone-relational',
         'aura_extensions/sulu-content',
         'aura_extensions/sulu-extension',
+        'type/collection-component',
 
         '__component__$app@suluadmin',
         '__component__$app@suluadmin',
@@ -37,6 +40,7 @@ require.config({
         '__component__$header@suluadmin',
         '__component__$list-toolbar@suluadmin',
         '__component__$labels@suluadmin',
+        '__component__$single-row-collection@suluadmin',
         '__component__$grid-group@suluadmin'
     ],
     exclude: [
