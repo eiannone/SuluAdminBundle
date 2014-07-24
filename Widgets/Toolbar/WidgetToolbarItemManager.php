@@ -54,8 +54,10 @@ class WidgetToolbarItemManager implements WidgetToolbarItemManagerInterface
         foreach ($this->services as $service) {
             $tmp = $service->getWidgetToolbarItems($context);
             if (!!$tmp) {
-                array_merge($items, $tmp);
+                 $items = array_merge($items, $tmp);
             }
         }
+
+        return $items;
     }
 }

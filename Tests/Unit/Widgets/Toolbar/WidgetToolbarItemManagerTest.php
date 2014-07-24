@@ -51,7 +51,7 @@ class WidgetToolbarItemManagerTest extends \PHPUnit_Framework_TestCase
         $service = $this->getMock(
             'Sulu\Bundle\AdminBundle\Widgets\Toolbar\WidgetToolbarItemServiceInterface'
         );
-        $service->expects($this->once())
+        $service->expects($this->any())
             ->method('getWidgetToolbarItems')
             ->with($this->getWidgetToolbarContext())
             ->will(
