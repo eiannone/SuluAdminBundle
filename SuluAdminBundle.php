@@ -12,6 +12,7 @@ namespace Sulu\Bundle\AdminBundle;
 
 use Sulu\Bundle\AdminBundle\DependencyInjection\Compiler\AddJsConfigPass;
 use Sulu\Bundle\AdminBundle\DependencyInjection\Compiler\WidgetsPass;
+use Sulu\Bundle\AdminBundle\DependencyInjection\Compiler\WidgetToolbarItemPass;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -26,5 +27,13 @@ class SuluAdminBundle extends Bundle
         $container->addCompilerPass(new AddAdminPass);
         $container->addCompilerPass(new AddJsConfigPass());
         $container->addCompilerPass(new WidgetsPass());
+
+        $container->addCompilerPass(
+            new WidgetToolbarItemPass(
+                'sulu.widget.toolbar_items',
+                'sulu_admin.widgets_toolbar_item_manager'
+            )
+        );
+
     }
 }

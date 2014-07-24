@@ -2,6 +2,7 @@ parameters:
     sulu_admin.admin_pool.class: Sulu\Bundle\AdminBundle\Admin\AdminPool
     sulu_admin.js_config_pool.class: Sulu\Bundle\AdminBundle\Admin\JsConfigPool
     sulu_admin.widgets_handler.class: Sulu\Bundle\AdminBundle\Widgets\WidgetsHandler
+    sulu_admin.widgets_toolbar_item_manager.class: Sulu\Bundle\AdminBundle\Widgets\WidgetToolbarItemManager
 
 services:
     sulu_admin.admin_pool:
@@ -9,5 +10,8 @@ services:
     sulu_admin.js_config_pool:
         class: %sulu_admin.js_config_pool.class%
     sulu_admin.widgets_handler:
-            class: %sulu_admin.widgets_handler.class%
-            arguments: [@templating]
+        class: %sulu_admin.widgets_handler.class%
+        arguments: [@templating]
+    sulu_admin.widgets_toolbar_item_manager:
+        class: %sulu_admin.widgets_toolbar_item_manager.class%
+
