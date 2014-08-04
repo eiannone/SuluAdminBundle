@@ -48,20 +48,13 @@ class WidgetToolbarItemPass implements CompilerPassInterface
         if (!$container->hasDefinition($this->toolbarItemHandlerTag)) {
             return;
         }
-        $toolbarItemHandler = $container->getDefinition(
-            $this->toolbarItemHandlerTag
-        );
+        $toolbarItemHandler = $container->getDefinition($this->toolbarItemHandlerTag);
 
         // get tagged services
-        $taggedServices = $container->findTaggedServiceIds(
-            $this->toolbarItemTag
-        );
+        $taggedServices = $container->findTaggedServiceIds($this->toolbarItemTag);
 
         foreach ($taggedServices as $id) {
-            $toolbarItemHandler->addMethodCall(
-                'addService',
-                array(new Reference($id))
-            );
+            $toolbarItemHandler->addMethodCall('addService', array(new Reference($id)));
         }
     }
 }

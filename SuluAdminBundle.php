@@ -29,10 +29,7 @@ class SuluAdminBundle extends Bundle
         $container->addCompilerPass(new WidgetsPass());
 
         $container->addCompilerPass(
-            new WidgetToolbarItemPass(
-                'sulu.widget.toolbar_items',
-                'sulu_admin.widgets_toolbar_item_manager'
-            )
+            new WidgetToolbarItemPass('sulu.widget.toolbar_items', 'sulu_admin.widgets_toolbar_item_manager')
         );
 
         $container->addCompilerPass(new SuluVersionPass());

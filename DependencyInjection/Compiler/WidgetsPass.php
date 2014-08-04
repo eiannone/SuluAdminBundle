@@ -43,27 +43,18 @@ class WidgetsPass implements CompilerPassInterface
         if (!$container->hasDefinition('sulu_admin.widgets_handler')) {
             return;
         }
-        $widgetsHandler = $container->getDefinition(
-            'sulu_admin.widgets_handler'
-        );
+        $widgetsHandler = $container->getDefinition('sulu_admin.widgets_handler');
 
         // get tagged services
-        $taggedServices = $container->findTaggedServiceIds(
-            $this->widgetTag
-        );
+        $taggedServices = $container->findTaggedServiceIds($this->widgetTag);
 
         // add each widget for each tag
         foreach ($taggedServices as $id => $tagAttributes) {
             foreach ($tagAttributes as $tagAttribute) {
                 if (array_key_exists('alias', $tagAttribute)) {
-                    $widgetsHandler->addMethodCall(
-                        'addWidget',
-                        array(new Reference($id), $tagAttribute['alias'])
-                    );
+                    $widgetsHandler->addMethodCall('addWidget', array(new Reference($id), $tagAttribute['alias']));
                 } else {
-                    throw new InvalidArgumentException(
-                        'A widget could not be registered.', 'alias'
-                    );
+                    throw new InvalidArgumentException('A widget could not be registered.', 'alias');
                 }
             }
         }
