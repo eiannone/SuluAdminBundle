@@ -15,7 +15,6 @@ use Sulu\Bundle\AdminBundle\Widgets\Toolbar\WidgetToolbarItem;
 
 class WidgetToolbarItemManagerTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @var WidgetToolbarItemManager
      */

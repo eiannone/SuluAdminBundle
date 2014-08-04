@@ -36,6 +36,5 @@ class SuluAdminBundle extends Bundle
         );
 
         $container->addCompilerPass(new SuluVersionPass());
-
     }
 }

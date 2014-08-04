@@ -21,7 +21,7 @@ class WidgetToolbarContext
     /**
      * Type a specific entity
      *
-     * @var mixed
+     * @var string
      */
     private $type;
 

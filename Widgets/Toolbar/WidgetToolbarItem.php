@@ -17,7 +17,6 @@ namespace Sulu\Bundle\AdminBundle\Widgets\Toolbar;
  */
 class WidgetToolbarItem
 {
-
     /**
      * @var string
      */

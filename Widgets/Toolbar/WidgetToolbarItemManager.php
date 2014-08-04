@@ -19,17 +19,16 @@ use Sulu\Bundle\AdminBundle\Widgets\Toolbar\WidgetToolbarItemServiceInterface;
  */
 class WidgetToolbarItemManager implements WidgetToolbarItemManagerInterface
 {
-
     /**
      * Collected services
      *
      * @var WidgetToolbarItemServiceInterface[]
      */
-    private $services;
+    private $widgetToolbarItemServices;
 
     function __construct()
     {
-        $this->services = [];
+        $this->widgetToolbarItemServices = [];
     }
 
     /**
@@ -39,7 +38,7 @@ class WidgetToolbarItemManager implements WidgetToolbarItemManagerInterface
      */
     public function addService(WidgetToolbarItemServiceInterface $service)
     {
-        $this->services[] = $service;
+        $this->widgetToolbarItemServices[] = $service;
     }
 
     /**
@@ -51,7 +50,7 @@ class WidgetToolbarItemManager implements WidgetToolbarItemManagerInterface
     public function getWidgetToolbarItems(WidgetToolbarContext $context)
     {
         $items = [];
-        foreach ($this->services as $service) {
+        foreach ($this->widgetToolbarItemServices as $service) {
             $tmp = $service->getWidgetToolbarItems($context);
             if (!!$tmp) {
                  $items = array_merge($items, $tmp);
