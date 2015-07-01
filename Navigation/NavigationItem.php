@@ -442,7 +442,7 @@ class NavigationItem implements \Iterator
             'action' => $this->getAction(),
             'hasSettings' => $this->getHasSettings(),
             'disabled' => $this->getDisabled(),
-            'id' => ($this->getId() != null) ? $this->getId() : uniqid(), //FIXME don't use uniqid()
+            'id' => ($this->getId() != null) ? $this->getId() : substr(sha1(microtime(true).mt_rand(10000,90000)), 27)
         );
 
         if ($this->getHeaderIcon() != null || $this->getHeaderTitle() != null) {
